@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitClub MVP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            display: flex;
+            color: #333;
+        }
+
+        /* Бокова панель */
+        .sidebar {
+            width: 220px;
+            background: #ffffffcc;
+            height: 100vh;
+            padding: 20px;
+            box-shadow: 3px 0 15px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+        }
+
+        .sidebar h2 {
+            color: #2575fc;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .sidebar button {
+            margin: 10px 0;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #fff;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar button:hover {
+            background: linear-gradient(135deg, #2575fc, #6a11cb);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Основний контент */
+        .main-content {
+            margin-left: 240px;
+            padding: 30px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #fff;
+        }
+
+        .section {
+            background: #ffffffcc;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        /* Картки тренувань */
+        #results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .result {
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .result:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        }
+
+        .result strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 18px;
+            color: #6a11cb;
+        }
+
+        /* Контакти */
+        .contacts {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ffffffcc;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .contacts p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>FitClub</h2>
+        <button onclick="showSection('register')">Реєстрація</button>
+        <button onclick="showSection('search')">Пошук тренувань</button>
+        <button onclick="showSection('booking')">Бронювання / Оплата</button>
+        <div class="contacts">
+            <p><strong>Контакти клубу:</strong></p>
+            <p>📞 +380 67 123 4567</p>
+            <p>✉ info@fitclub.ua</p>
+            <p>🏢 вул. Спортивна, 12, Київ</p>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <h1>FitClub MVP</h1>
+
+        <!-- Реєстрація клієнта -->
+        <div id="register" class="section">
+            <h2>Реєстрація клієнта</h2>
+            <input type="text" id="clientName" placeholder="Ім'я">
+            <input type="text" id="clientPhone" placeholder="Телефон">
+            <input type="email" id="clientEmail" placeholder="Email">
+            <button onclick="registerClient()">Зареєструватися</button>
+        </div>
+
+        <!-- Пошук тренувань -->
+        <div id="search" class="section" style="display:none;">
+            <h2>Пошук тренувань</h2>
+            <select id="typeFilter">
+                <option value="">Всі типи</option>
+                <option value="Фітнес">Фітнес</option>
+                <option value="Йога">Йога</option>
+                <option value="Силові">Силові</option>
+            </select>
+            <select id="trainerFilter">
+                <option value="">Всі тренери</option>
+                <option value="Іван Іванов">Іван Іванов</option>
+                <option value="Марія Петрова">Марія Петрова</option>
+                <option value="Олександр Коваль">Олександр Коваль</option>
+            </select>
+            <button onclick="searchTraining()">Знайти</button>
+            <div id="results"></div>
+        </div>
+
+        <!-- Бронювання / Оплата -->
+        <div id="booking" class="section" style="display:none;">
+            <h2>Бронювання та оплата абонементу</h2>
+            <select id="subscriptionSelect">
+                <option value="">Виберіть тренування для бронювання / оплати</option>
+            </select>
+            <button onclick="bookAndPay()">Забронювати та оплатити</button>
+        </div>
+
+    </div>
+
+    <script>
+        const trainingDatabase = [
+            {id: 1, type: "Фітнес", trainer: "Іван Іванов", time: "08:00", maxParticipants: 15},
+            {id: 2, type: "Йога", trainer: "Марія Петрова", time: "10:00", maxParticipants: 10},
+            {id: 3, type: "Силові", trainer: "Олександр Коваль", time: "18:00", maxParticipants: 12},
+            {id: 4, type: "Фітнес", trainer: "Іван Іванов", time: "19:00", maxParticipants: 15}
+        ];
+
+        let activeClient = JSON.parse(localStorage.getItem("activeClient")) || null;
+
+        function showSection(id) {
+            document.getElementById("register").style.display = "none";
+            document.getElementById("search").style.display = "none";
+            document.getElementById("booking").style.display = "none";
+            document.getElementById(id).style.display = "block";
+            if(id==='booking') updateSubscriptionList();
+        }
+
+        function registerClient() {
+            const name = document.getElementById("clientName").value;
+            const phone = document.getElementById("clientPhone").value;
+            const email = document.getElementById("clientEmail").value;
+
+            if (!name || !phone || !email) {
+                alert("Будь ласка, заповніть всі поля!");
+                return;
+            }
+
+            activeClient = {name, phone, email, subscriptions: [], paid: []};
+            localStorage.setItem("activeClient", JSON.stringify(activeClient));
+            alert(`Клієнт ${name} успішно зареєстрований!`);
+        }
+
+        function searchTraining() {
+            const type = document.getElementById("typeFilter").value;
+            const trainer = document.getElementById("trainerFilter").value;
+
+            const results = trainingDatabase.filter(t => 
+                (type === "" || t.type === type) && 
+                (trainer === "" || t.trainer === trainer)
+            );
+
+            displayResults(results);
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById("results");
+            container.innerHTML = "";
+            if (results.length === 0) {
+                container.innerHTML = "<p>Тренувань за вашими критеріями не знайдено</p>";
+                return;
+            }
+            results.forEach(t => {
+                const div = document.createElement("div");
+                div.className = "result";
+                div.innerHTML = `<strong>ID: ${t.id}</strong>${t.type} з ${t.trainer} о ${t.time}<br>Макс. учасників: ${t.maxParticipants}`;
+                container.appendChild(div);
+            });
+        }
+
+        // Оновлюємо список бронювань
+        function updateSubscriptionList() {
+            const select = document.getElementById("subscriptionSelect");
+            select.innerHTML = '<option value="">Виберіть тренування для бронювання / оплати</option>';
+            if(!activeClient) return;
+            trainingDatabase.forEach(t => {
+                select.innerHTML += `<option value="${t.id}">${t.type} з ${t.trainer} о ${t.time}</option>`;
+            });
+        }
+
+        // Бронювання та оплата (UC-05)
+        function bookAndPay() {
+            if(!activeClient) {
+                alert("Спершу зареєструйтесь!");
+                return;
+            }
+
+            const select = document.getElementById("subscriptionSelect");
+            const trainingId = parseInt(select.value);
+            if(!trainingId) {
+                alert("Оберіть тренування!");
+                return;
+            }
+
+            if(!activeClient.subscriptions.includes(trainingId)) {
+                activeClient.subscriptions.push(trainingId);
+            }
+
+            if(!activeClient.paid.includes(trainingId)) {
+                activeClient.paid.push(trainingId);
+                alert("Оплата успішна! Абонемент активовано, доступ до клубу надано.");
+            } else {
+                alert("Цей абонемент вже оплачено!");
+            }
+
+            localStorage.setItem("activeClient", JSON.stringify(activeClient));
+        }
+
+        showSection('register');
+    </script>
+</body>
+</html>
